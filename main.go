@@ -16,10 +16,10 @@ var (
 func main() {
 
 	e := echo.New()
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAcceptEncoding},
-	}))
+	e.Use(middleware.Recover())
+	// e.Use(middleware.CSRF())
+	e.Use(middleware.Secure())
+	e.Use(middleware.CORS())
 
 	e.GET("/key", APICaptchaKey)
 	e.GET("/image/:key", APICaptchaImage)
@@ -37,7 +37,7 @@ func APICaptchaKey(c echo.Context) error {
 		// captcha.New(),
 		captcha.NewLen(DefaultLen),
 	}
-	// fmt.Println("CaptchaId-->", d)
+	// fmt.Println("csrf==>", c.Get(middleware.DefaultCSRFConfig.ContextKey))
 
 	return c.JSON(http.StatusOK, &d)
 	// return captcha.WriteImage(c.Response().Writer(), d.CaptchaKey, 128, 44)
@@ -48,7 +48,6 @@ func APICaptchaKey(c echo.Context) error {
 func APICaptchaImage(c echo.Context) error {
 	captchaKey := c.Param("key")
 	// fmt.Println("CaptchaKey==>", captchaKey)
-	// fmt.Println(c.Param("key"))
 	return captcha.WriteImage(c.Response().Writer(), captchaKey, 240, 120)
 	// img := captcha.NewImage(captchaKey, captcha.RandomDigits(4), 128, 44)
 	// img.WriteTo(c.Response().Writer())
